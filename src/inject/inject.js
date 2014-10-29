@@ -1,41 +1,110 @@
+;(function () {
+
+var width = 320,
+    height = 230,
+    left = (window.innerWidth - width) / 2,
+    top = (window.innerHeight - height) / 2,
+    finger = false,
+    isHandle = false,
+    md = {},
+    dialog, deBox;
+
+var MOUSESTATES = {
+    'move': 'move',
+    '1000': 'ns-resize',
+    '1100': 'nesw-resize',
+    '0100': 'ew-resize',
+    '0110': 'nwse-resize',
+    '0010': 'ns-resize',
+    '0011': 'nesw-resize',
+    '0001': 'ew-resize',
+    '1001': 'nwse-resize'
+};
+
 chrome.extension.sendMessage({}, function(response) {
-	var readyStateCheckInterval = setInterval(function() {
-	if (document.readyState === "complete") {
-		clearInterval(readyStateCheckInterval);
+    var readyStateCheckInterval = setInterval(function() {
+    if (document.readyState === "complete") {
+        clearInterval(readyStateCheckInterval);
 
-		// ----------------------------------------------------------
-		// This part of the script triggers when page is done loading
-		console.log("Hello. This message was sent from scripts/inject.js");
-		// ----------------------------------------------------------
+        // ----------------------------------------------------------
+        // This part of the script triggers when page is done loading
+        console.log("Hello. This message was sent from scripts/inject.js");
+        // ----------------------------------------------------------
 
-	}
-	}, 10);
+    }
+    }, 10);
 });
 
+chrome.runtime.onMessage.addListener(
 
-setTimeout(function () {
+    function(request, sender, sendResponse) {
 
-    var width = 320,
-        height = 230,
-        left = (window.innerWidth - width) / 2,
-        top = (window.innerHeight - height) / 2,
-        finger = false,
-        isHandle = false,
-        md = {};
+        if (request.subject === 'bip') {
+            
+            sendResponse({message: 'bop'});
+        }
+        else if (request.subject === 'showSelector') {
+            
+            showSelector();
+            sendResponse({message: 'ok'});
+        }
+        else if (request.subject === 'hideSelector') {
+            
+            hideSelector();
+            sendResponse({message: 'ok'});
+        }
+        else if (request.subject === 'startReportMouse') {
+            
+            window.addEventListener('mousemove', onMouseMoveReport)
+            sendResponse({message: 'ok'});
+        }
+        else if (request.subject === 'stopReportMouse') {
+            
+            window.removeEventListener('mousemove', onMouseMoveReport)
+            sendResponse({message: 'ok'});
+        }
+    }
+);
 
-    var MOUSESTATES = {
-        'move': 'move',
-        '1000': 'ns-resize',
-        '1100': 'nesw-resize',
-        '0100': 'ew-resize',
-        '0110': 'nwse-resize',
-        '0010': 'ns-resize',
-        '0011': 'nesw-resize',
-        '0001': 'ew-resize',
-        '1001': 'nwse-resize'
-    };
+initSelector();
 
-    var dialog = document.createElement('dialog');
+
+
+function reportMetrics() {
+
+    chrome.runtime.sendMessage({
+        subject: 'changeCrop',
+        left: left,
+        top: top,
+        width: width,
+        height: height,
+    });
+}
+
+function onMouseMoveReport(e) {
+
+    chrome.runtime.sendMessage({
+        subject: 'changeMouse',
+        x: e.x,
+        y: e.y,
+    });
+}
+
+function showSelector() {
+
+    document.body.appendChild(dialog);
+}
+
+function hideSelector() {
+
+    if (dialog.parentNode) {
+        dialog.parentNode.removeChild(dialog);
+    }
+}
+
+function initSelector() {
+
+    dialog = document.createElement('dialog');
     document.body.appendChild(dialog);
     dialog.style.position = 'fixed';
     dialog.style.margin = '0';
@@ -44,9 +113,10 @@ setTimeout(function () {
     dialog.style.left = '0px';
     dialog.style.width = '100%';
     dialog.style.height = '100%';
-    document.body.appendChild(dialog);
+    dialog.style.background = 'none';
+    dialog.style.border = 'none';
 
-    var deBox = document.createElement('div');
+    deBox = document.createElement('div');
     deBox.style.position = 'absolute';
     deBox.style.margin = '0';
     deBox.style.border = '1px solid lime';
@@ -200,7 +270,10 @@ setTimeout(function () {
         }
 
         refreshSelectionBox();
+        reportMetrics();
     }
 
     dialog.showModal();
-});
+};
+
+}());

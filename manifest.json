@@ -9,21 +9,23 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  "web_accessible_resources": ["pages/*"],
   "default_locale": "en",
   "background": {
     "scripts": [
+      "src/bg/gifjs/gif.js",
       "src/bg/background.js"
     ],
     "persistent": true
   },
   "options_page": "src/options_custom/index.html",
   "browser_action": {
-    "default_icon": "icons/icon19.png",
-    "default_title": "browser action demo",
-    "default_popup": "src/browser_action/browser_action.html"
+    "default_icon": "icons/icon_base.png",
+    "default_title": "browser action demo"
   },
   "permissions": [
     "tabs",
+    "desktopCapture",
     "<all_urls>"
   ],
   "content_scripts": [
